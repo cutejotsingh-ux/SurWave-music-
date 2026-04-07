@@ -1,661 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Song Generator | 4-5 Minute Songs</title>
-    <style>
-        /* Same CSS as before - keep it */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1400px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 30px;
-            backdrop-filter: blur(10px);
-        }
-
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 2.5em;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-
-        .duration-badge {
-            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            display: inline-block;
-            margin-bottom: 15px;
-        }
-
-        .connection-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 30px;
-        }
-
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .status-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ff4444;
-            transition: all 0.3s ease;
-        }
-
-        .status-dot.connected {
-            background: #00C851;
-            box-shadow: 0 0 10px #00C851;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1.2fr 0.8fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .input-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .section-title {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #555;
-            font-weight: 600;
-        }
-
-        input[type="text"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-        }
-
-        input[type="text"]:focus,
-        select:focus,
-        textarea:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-
-        .style-options {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .style-btn {
-            padding: 10px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            background: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .style-btn.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border-color: transparent;
-        }
-
-        .duration-selector {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .duration-option {
-            text-align: center;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-        }
-
-        .duration-option.active {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border-color: transparent;
-        }
-
-        .duration-option small {
-            display: block;
-            font-size: 12px;
-            font-weight: normal;
-            margin-top: 5px;
-        }
-
-        .range-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        input[type="range"] {
-            flex: 1;
-            height: 6px;
-            -webkit-appearance: none;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 3px;
-        }
-
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border: 2px solid #667eea;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .output-section {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .generate-btn {
-            width: 100%;
-            padding: 18px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .generate-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .generate-btn:disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .progress-container {
-            margin: 20px 0;
-            display: none;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 8px;
-            font-size: 14px;
-            color: #666;
-            font-weight: 500;
-        }
-
-        .audio-player {
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            display: none;
-        }
-
-        .audio-player audio {
-            width: 100%;
-            outline: none;
-        }
-
-        .now-playing {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 15px;
-            color: #333;
-            font-weight: 600;
-        }
-
-        .song-list {
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .song-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: white;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-        }
-
-        .song-item:hover {
-            transform: translateX(5px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
-        }
-
-        .song-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            margin-right: 15px;
-        }
-
-        .song-info {
-            flex: 1;
-        }
-
-        .song-title {
-            font-weight: 700;
-            color: #333;
-            margin-bottom: 5px;
-            font-size: 1.1em;
-        }
-
-        .song-meta {
-            font-size: 0.85em;
-            color: #666;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .song-meta span {
-            background: #f0f0f0;
-            padding: 3px 8px;
-            border-radius: 15px;
-        }
-
-        .song-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .action-btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .play-btn {
-            background: #667eea;
-            color: white;
-        }
-
-        .download-btn {
-            background: #28a745;
-            color: white;
-        }
-
-        .delete-btn {
-            background: #dc3545;
-            color: white;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            margin-top: 30px;
-        }
-
-        .feature-card {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .feature-icon {
-            font-size: 2.5em;
-            margin-bottom: 12px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            background: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            border-left: 4px solid #667eea;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Song Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #6a11cb, #2575fc);
+      color: white;
+      text-align: center;
+      padding: 50px;
+    }
+    .container {
+      background: rgba(0,0,0,0.6);
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 5px;
+      background: #ff9800;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    .output {
+      margin-top: 30px;
+      font-size: 18px;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎵 AI Song Generator</h1>
-        <p class="subtitle">4-5 Minute Full Length Songs</p>
+  <div class="container">
+    <h1>🎵 AI Song Generator 🎵</h1>
+    <p>अपना टेक्स्ट डालें और गाना जनरेट करें:</p>
+    <textarea id="songInput" placeholder="यहाँ अपने गाने का आइडिया लिखें..."></textarea>
+    <br>
+    <button onclick="generateSong()">Generate Song</button>
+    <div class="output" id="songOutput"></div>
+  </div>
 
-        <div class="connection-status">
-            <div class="status-indicator">
-                <span class="status-dot" id="statusDot"></span>
-                <span id="statusText">Checking server...</span>
-            </div>
-            <div class="duration-badge">⏱️ 4-5 Minutes</div>
-        </div>
+  <script>
+    function generateSong() {
+      let input = document.getElementById("songInput").value;
+      let output = document.getElementById("songOutput");
 
-        <div class="main-grid">
-            <!-- Input Section -->
-            <div class="input-section">
-                <div class="section-title">
-                    <span>🎤 Song Details</span>
-                </div>
-                
-                <div class="form-group">
-                    <label>Song Title</label>
-                    <input type="text" id="songTitle" placeholder="Enter song title..." value="My 5 Minute Song">
-                </div>
-
-                <div class="form-group">
-                    <label>Lyrics / Description</label>
-                    <textarea id="lyrics" placeholder="Write your lyrics...">This is my 5 minute AI generated song with full structure</textarea>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Music Style</label>
-                        <select id="musicStyle">
-                            <option value="pop">Pop</option>
-                            <option value="rock">Rock</option>
-                            <option value="hiphop">Hip Hop</option>
-                            <option value="electronic">Electronic</option>
-                            <option value="classical">Classical</option>
-                            <option value="jazz">Jazz</option>
-                            <option value="lofi">Lo-Fi</option>
-                            <option value="edm">EDM</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Voice Type</label>
-                        <select id="voiceType">
-                            <option value="male">Male Vocal</option>
-                            <option value="female">Female Vocal</option>
-                            <option value="duet">Duet</option>
-                            <option value="instrumental">Instrumental</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Mood</label>
-                    <div class="style-options">
-                        <button class="style-btn active" data-mood="happy">😊 Happy</button>
-                        <button class="style-btn" data-mood="sad">😢 Sad</button>
-                        <button class="style-btn" data-mood="energetic">⚡ Energetic</button>
-                        <button class="style-btn" data-mood="calm">😌 Calm</button>
-                        <button class="style-btn" data-mood="romantic">❤️ Romantic</button>
-                        <button class="style-btn" data-mood="dark">🌑 Dark</button>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Duration (4-5 Minutes)</label>
-                    <div class="duration-selector">
-                        <button class="duration-option active" data-duration="240">
-                            4 Min <small>240 sec</small>
-                        </button>
-                        <button class="duration-option" data-duration="270">
-                            4.5 Min <small>270 sec</small>
-                        </button>
-                        <button class="duration-option" data-duration="300">
-                            5 Min <small>300 sec</small>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Tempo (BPM)</label>
-                        <div class="range-container">
-                            <input type="range" id="tempo" min="60" max="200" value="120" step="1">
-                            <span id="tempoValue">120 BPM</span>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Key</label>
-                        <select id="key">
-                            <option value="C">C Major</option>
-                            <option value="D">D Major</option>
-                            <option value="E">E Major</option>
-                            <option value="F">F Major</option>
-                            <option value="G">G Major</option>
-                            <option value="A">A Major</option>
-                            <option value="B">B Major</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Effects</label>
-                        <select id="effects">
-                            <option value="none">None</option>
-                            <option value="reverb">Reverb</option>
-                            <option value="echo">Echo</option>
-                            <option value="chorus">Chorus</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Quality</label>
-                        <select id="quality">
-                            <option value="128">128 kbps</option>
-                            <option value="192">192 kbps</option>
-                            <option value="320">320 kbps</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Output Section -->
-            <div class="output-section">
-                <div class="section-title">
-                    <span>🎵 Generated Songs (4-5 Min)</span>
-                </div>
-                
-                <button class="generate-btn" id="generateBtn" onclick="generateSong()">
-                    <i>✨</i> Generate 5 Minute Song
-                </button>
-
-                <div class="progress-container" id="progressContainer">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-text" id="progressText">Generating 5 minute song...</div>
-                </div>
-
-                <div class="audio-player" id="audioPlayer">
-                    <div class="now-playing">
-                        <i>▶️</i>
-                        <span id="nowPlayingTitle">Now Playing</span>
-                    </div>
-                    <audio id="mainAudio" controls controlsList="nodownload"></audio>
-                </div>
-
-                <div class="song-list" id="songList">
-                    <!-- Songs will appear here -->
-                </div>
-            </div>
-        </div>
-
-        <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon">⏱️</div>
-                <div class="feature-title">4-5 Minutes</div>
-                <div class="feature-desc">Full length songs</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎸</div>
-                <div class="feature-title">12+ Styles</div>
-                <div class="feature-desc">Multiple genres</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">📥</div>
-                <div class="feature-title">Download</div>
-                <div class="feature-desc">WAV format</div>
-            </div>
-            <div class="feature-card">
-                <div class="feature-icon">🎤</div>
-                <div class="feature-title">AI Vocals</div>
-                <div class="feature-desc">Realistic singing</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification -->
-  
+      if(input.trim() === "") {
+        output.innerHTML = "कृपया पहले कुछ टेक्स्ट डालें!";
+      } else {
+        // यहाँ आप AI API को कॉल कर सकते हैं
+        output.innerHTML = "🎶 Generated Song Lyrics: <br><br>" + 
+                           "यहाँ आपके टेक्स्ट के आधार पर गाना बनेगा: <br>" + input;
+      }
+    }
+  </script>
+</body>
+</html>
